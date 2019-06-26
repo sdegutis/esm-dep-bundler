@@ -19,6 +19,10 @@ const includePath = 'public/**/*.js';
 const webModulesPrefix = '/web_modules/';
 const outDir = 'public/web_modules';
 
+const aliasesOstensiblyFromPackageJson = {
+  'styled-components': 'node_modules/styled-components/dist/styled-components.browser.cjs.js',
+};
+
 const { rollupInput, npmDeps } = getDependenciesFromFiles({ includePath, webModulesPrefix });
 
 // TODO: install dependencies for the user via some kind of NPM library
@@ -35,7 +39,7 @@ rollup.rollup({
   input: rollupInput,
   plugins: [
     replaceProcessEnv(),
-    renameModuleAliases(),
+    renameModuleAliases(aliasesOstensiblyFromPackageJson),
     resolve(),
     commonjs(),
   ],
@@ -112,10 +116,7 @@ function replaceProcessEnv() {
   });
 }
 
-function renameModuleAliases() {
-  const aliases = {
-    'styled-components': 'node_modules/styled-components/dist/styled-components.browser.cjs.js',
-  };
+function renameModuleAliases(aliases) {
   return {
     name: 'pika:rename-module-aliases',
     resolveId(src, loader) {
