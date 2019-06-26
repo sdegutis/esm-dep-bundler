@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "chart.js": "^2.8.0",
+    "htm": "^2.1.1",
     "react": "npm:@reactesm/react@^0.1.0",
     "react-dom": "npm:@reactesm/react-dom@^0.1.1",
     "rollup": "^1.16.1",
@@ -23,6 +24,7 @@
     "acorn": "^6.1.1",
     "acorn-dynamic-import": "^4.0.0",
     "acorn-walk": "^6.1.1",
-    "fast-glob": "^3.0.2"
+    "fast-glob": "^3.0.2",
+    "rollup-plugin-replace": "^2.2.0"
   }
 }

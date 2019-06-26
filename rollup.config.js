@@ -1,5 +1,6 @@
-import commonjs from 'rollup-plugin-commonjs'
-import resolve from 'rollup-plugin-node-resolve'
+import commonjs from 'rollup-plugin-commonjs';
+import resolve from 'rollup-plugin-node-resolve';
+import rollupPluginReplace from 'rollup-plugin-replace';
 
 import * as acorn from 'acorn';
 import * as acornWalk from 'acorn-walk';
@@ -71,13 +72,14 @@ console.log(input);
 export default {
   input,
   output: {
-    dir: 'out',
+    dir: 'public/web_modules',
     format: 'esm',
     sourcemap: false,
     exports: 'named',
     chunkFileNames: 'common/[name]-[hash].js',
   },
   plugins: [
+    replaceProcessEnv(),
     renameModuleAliases(),
     resolve(),
     commonjs(),
@@ -87,6 +89,12 @@ export default {
 const aliases = {
   'styled-components': 'node_modules/styled-components/dist/styled-components.browser.cjs.js',
 };
+
+function replaceProcessEnv() {
+  return rollupPluginReplace({
+    'process.env.NODE_ENV': '"development"',
+  });
+}
 
 function renameModuleAliases() {
   return {
