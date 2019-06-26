@@ -1,23 +1,17 @@
-var npmi = require('npmi');
-var path = require('path');
+const npm = require('global-npm');
 
-console.log(npmi.NPM_VERSION); // prints the installed npm version used by npmi
+const deps = [
+  { name: 'pad-left', version: '2.1.0' },
+  { name: 'repeat-string', version: null }, // '1.6.1'
+];
 
+const depStrings = deps.map(({name,version}) => `${name}@${version||'latest'}`);
 
-var options = {
-    name: 'repeat-string',
-    version: '1.6.1',
-    path: '.',
-    npmLoad: {loglevel: 'silent'},
-};
+console.log(depStrings);
 
-npmi(options, function (err, result) {
-    if (err) {
-        if 		(err.code === npmi.LOAD_ERR) 	console.log('npm load error');
-        else if (err.code === npmi.INSTALL_ERR) console.log('npm install error');
-        return console.log(err.message);
-    }
-
-    // installed
-    console.log(options.name+'@'+options.version+' installed successfully -- in '+path.resolve(options.path));
+npm.load({loglevel:'silent'}, (err) => {
+  npm.commands.install('.', depStrings, (err) => {
+    console.log('loaded', err);
+  });
+  console.log('installed', err);
 });
