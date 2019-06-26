@@ -141,6 +141,6 @@ function renameModuleAliases() {
 
 rimraf.sync('public/web_modules');
 
-const watcher = rollup.watch(config);
-
-watcher.on('event', event => console.log(event.code));
+rollup.rollup(config).then(bundle => {
+  bundle.write(config.output);
+});
