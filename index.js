@@ -13,15 +13,7 @@ const path = require('path');
 const fg = require('fast-glob');
 const fs = require('fs');
 
-// meh why not
-Array.prototype.unique = function() {
-  const seen = {};
-  return this.filter(item => {
-    const found = seen[item];
-    if (!found) seen[item] = true;
-    return !found;
-  });
-};
+require('./polyfills.js');
 
 
 const {input, deps} = getDependenciesFromFiles({
