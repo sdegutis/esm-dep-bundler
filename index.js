@@ -22,37 +22,31 @@ const {input, deps} = getDependenciesFromFiles({
 });
 
 // TODO: install dependencies for the user via some kind of NPM library
+    // exclude: 'public/web_modules/**',
+    // include: 'public/**',
+
 
 console.log(input);
 console.log(deps);
 
-const config = {
+rimraf.sync('public/web_modules');
+
+rollup.rollup({
   input,
-  output: {
-    dir: 'public/web_modules',
-    format: 'esm',
-    sourcemap: false,
-    exports: 'named',
-    chunkFileNames: 'common/[name]-[hash].js',
-  },
   plugins: [
     replaceProcessEnv(),
     renameModuleAliases(),
     resolve(),
     commonjs(),
   ],
-  watch: {
-    exclude: 'public/web_modules/**',
-    include: 'public/**',
-  },
-};
-
-
-
-rimraf.sync('public/web_modules');
-
-rollup.rollup(config).then(bundle => {
-  bundle.write(config.output);
+}).then(bundle => {
+  bundle.write({
+    dir: 'public/web_modules',
+    format: 'esm',
+    sourcemap: false,
+    exports: 'named',
+    chunkFileNames: 'common/[name]-[hash].js',
+  });
 });
 
 
