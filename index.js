@@ -118,9 +118,6 @@ const config = {
   },
 };
 
-const aliases = {
-  'styled-components': 'node_modules/styled-components/dist/styled-components.browser.cjs.js',
-};
 
 function replaceProcessEnv() {
   return rollupPluginReplace({
@@ -129,6 +126,9 @@ function replaceProcessEnv() {
 }
 
 function renameModuleAliases() {
+  const aliases = {
+    'styled-components': 'node_modules/styled-components/dist/styled-components.browser.cjs.js',
+  };
   return {
     name: 'pika:rename-module-aliases',
     resolveId(src, loader) {
