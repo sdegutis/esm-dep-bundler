@@ -1,0 +1,28 @@
+{
+  "name": "rtest",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "chart.js": "^2.8.0",
+    "react": "npm:@reactesm/react@^0.1.0",
+    "react-dom": "npm:@reactesm/react-dom@^0.1.1",
+    "rollup": "^1.16.1",
+    "rollup-plugin-commonjs": "^10.0.0",
+    "rollup-plugin-node-resolve": "^5.0.3",
+    "styled-components": "^4.3.2",
+    "styled-icons": "^8.1.0"
+  },
+  "devDependencies": {
+    "acorn": "^6.1.1",
+    "acorn-dynamic-import": "^4.0.0",
+    "acorn-walk": "^6.1.1",
+    "fast-glob": "^3.0.2"
+  }
+}
