@@ -1,18 +1,21 @@
 import { ReadableDate } from './ReadableDate.js';
 import { Counter } from './Counter.js';
 import { RolesPage } from './RolesPage.js';
-import { BrowserRouter, Route } from '/web_modules/react-router-dom.js';
+// import { BrowserRouter, Route } from '/web_modules/react-router-dom.js';
 import ReactDOM from '/web_modules/react-dom.js';
 import React from '/web_modules/react.js';
-import { html } from '/web_modules/htm/react.js';
-// import chronoNode from '/web_modules/chrono-node.js';
-import { startCase, zipWith } from '/web_modules/lodash-es.js';
+//import { html } from '/web_modules/htm/react.js';
 import styled, { css } from '/web_modules/styled-components.js';
 import { Clipboard } from '/web_modules/styled-icons/fa-solid/Clipboard.js';
 import { ClipboardCheck } from '/web_modules/styled-icons/fa-solid/ClipboardCheck.js';
 import { ClipboardList } from '/web_modules/styled-icons/fa-solid/ClipboardList.js';
 
-// console.log(chronoNode);
+console.log(chronoNode);
+
+import('/web_modules/chart.js.js').then(mod => {
+  console.log(mod);
+});
+
 
 const StyledSomeComponent = styled.div`
   color: blue;
@@ -20,10 +23,6 @@ const StyledSomeComponent = styled.div`
     color: hotpink;
   `}
 `;
-
-import('/web_modules/shoo2.js').then(mod => {
-  console.log(mod);
-});
 
 const SomeComponent = ({ important, ...props }) => (
   html`
