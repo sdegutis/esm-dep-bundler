@@ -33,6 +33,37 @@ const {input, deps} = getDependenciesFromFiles({
 console.log(input);
 console.log(deps);
 
+const config = {
+  input,
+  output: {
+    dir: 'public/web_modules',
+    format: 'esm',
+    sourcemap: false,
+    exports: 'named',
+    chunkFileNames: 'common/[name]-[hash].js',
+  },
+  plugins: [
+    replaceProcessEnv(),
+    renameModuleAliases(),
+    resolve(),
+    commonjs(),
+  ],
+  watch: {
+    exclude: 'public/web_modules/**',
+    include: 'public/**',
+  },
+};
+
+
+
+rimraf.sync('public/web_modules');
+
+rollup.rollup(config).then(bundle => {
+  bundle.write(config.output);
+});
+
+
+
 
 
 function getDependenciesFromFiles({includePath, webModulesPrefix}) {
@@ -88,39 +119,6 @@ function getDependenciesFromFiles({includePath, webModulesPrefix}) {
   return {input, deps};
 }
 
-// require('process').exit(1);
-
-// input = {
-//   'styled-components': 'styled-components',
-//   'styled-icons/fa-solid/Clipboard': 'styled-icons/fa-solid/Clipboard',
-//   'Chart.js': 'Chart.js',
-//   'react': 'react',
-//   'react-dom': 'react-dom',
-// }
-
-
-const config = {
-  input,
-  output: {
-    dir: 'public/web_modules',
-    format: 'esm',
-    sourcemap: false,
-    exports: 'named',
-    chunkFileNames: 'common/[name]-[hash].js',
-  },
-  plugins: [
-    replaceProcessEnv(),
-    renameModuleAliases(),
-    resolve(),
-    commonjs(),
-  ],
-  watch: {
-    exclude: 'public/web_modules/**',
-    include: 'public/**',
-  },
-};
-
-
 function replaceProcessEnv() {
   return rollupPluginReplace({
     'process.env.NODE_ENV': '"development"',
@@ -138,9 +136,3 @@ function renameModuleAliases() {
     },
   };
 }
-
-rimraf.sync('public/web_modules');
-
-rollup.rollup(config).then(bundle => {
-  bundle.write(config.output);
-});
