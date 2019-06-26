@@ -23,35 +23,38 @@ const aliasesOstensiblyFromPackageJson = {
   'styled-components': 'node_modules/styled-components/dist/styled-components.browser.cjs.js',
 };
 
-const { rollupInput, npmDeps } = getDependenciesFromFiles({ includePath, webModulesPrefix });
-
 // TODO: install dependencies for the user via some kind of NPM library
-    // exclude: 'public/web_modules/**',
-    // include: 'public/**',
+// exclude: 'public/web_modules/**',
+// include: 'public/**',
 
+run();
 
-console.log(rollupInput);
-console.log(npmDeps);
+function run() {
+  const { rollupInput, npmDeps } = getDependenciesFromFiles({ includePath, webModulesPrefix });
 
-rimraf.sync(outDir);
+  console.log(rollupInput);
+  console.log(npmDeps);
 
-rollup({
-  input: rollupInput,
-  plugins: [
-    replaceProcessEnv(),
-    renameModuleAliases(aliasesOstensiblyFromPackageJson),
-    resolve(),
-    commonjs(),
-  ],
-}).then(bundle => {
-  bundle.write({
-    dir: outDir,
-    format: 'esm',
-    sourcemap: false,
-    exports: 'named',
-    chunkFileNames: 'common/[name]-[hash].js',
+  rimraf.sync(outDir);
+
+  rollup({
+    input: rollupInput,
+    plugins: [
+      replaceProcessEnv(),
+      renameModuleAliases(aliasesOstensiblyFromPackageJson),
+      resolve(),
+      commonjs(),
+    ],
+  }).then(bundle => {
+    bundle.write({
+      dir: outDir,
+      format: 'esm',
+      sourcemap: false,
+      exports: 'named',
+      chunkFileNames: 'common/[name]-[hash].js',
+    });
   });
-});
+}
 
 
 
