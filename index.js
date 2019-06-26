@@ -27,6 +27,11 @@ entries.forEach(entry => {
       const mod = node.source.value;
       allImportedModules.push(mod);
     },
+    ExportNamedDeclaration(node) {
+      if (node.source && node.source.type === 'Literal') {
+        allImportedModules.push(node.source.value);
+      }
+    },
     Import(node, ancestors) {
       const expr = ancestors[ancestors.length - 2].arguments[0];
       if (expr.type === 'Literal') {
