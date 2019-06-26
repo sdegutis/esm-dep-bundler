@@ -85,7 +85,7 @@ function getDependenciesFromFiles({includePath, webModulesPrefix}) {
 
   const webModules = allImportedModules
         .filter(mod => mod.startsWith(webModulesPrefix))
-        .map(mod => mod.replace(new RegExp('^' + webModulesPrefix), ''))
+        .map(mod => mod.substr(webModulesPrefix.length))
         .sort()
         .unique();
 
