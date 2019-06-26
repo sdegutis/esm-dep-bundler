@@ -13,6 +13,8 @@ const path = require('path');
 const fg = require('fast-glob');
 const fs = require('fs');
 
+const npm = require('global-npm');
+
 const chokidar = require('chokidar');
 
 require('./polyfills.js');
@@ -40,6 +42,8 @@ run();
 
 function run() {
   const { rollupInput, npmDeps } = getDependenciesFromFiles({ includePath, webModulesPrefix });
+
+  installDeps(npmDeps);
 
   console.log(rollupInput);
   console.log(npmDeps);
@@ -70,6 +74,17 @@ function run() {
 
 
 
+
+function installDeps(deps) {
+  const depStrings = deps.map(([name,version]) => `${name}@${version||'latest'}`);
+  console.log(depStrings);
+  npm.load({ loglevel: 'silent' }, (err) => {
+    npm.commands.install('.', depStrings, (err) => {
+      console.log('installed via npm', err);
+    });
+    console.log('loaded npm', err);
+  });
+}
 
 function getDependenciesFromFiles({includePath, webModulesPrefix}) {
   const entries = fg.sync(path.join(__dirname, includePath));
