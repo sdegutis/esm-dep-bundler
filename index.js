@@ -15,11 +15,12 @@ const fs = require('fs');
 
 // meh why not
 Array.prototype.unique = function() {
-  const that = [];
-  this.forEach(item => {
-    if (!that.includes(item)) that.push(item);
+  const seen = {};
+  return this.filter(item => {
+    const found = seen[item];
+    if (!found) seen[item] = true;
+    return !found;
   });
-  return that;
 };
 
 
