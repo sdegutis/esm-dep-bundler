@@ -23,6 +23,18 @@ Array.prototype.unique = function() {
 };
 
 
+const {input, deps} = getDependenciesFromFiles({
+  includePath: 'public/**/*.js',
+  webModulesPrefix: '/web_modules/',
+});
+
+// TODO: install dependencies for the user via some kind of NPM library
+
+console.log(input);
+console.log(deps);
+
+
+
 function getDependenciesFromFiles({includePath, webModulesPrefix}) {
   const entries = fg.sync(path.join(__dirname, includePath));
   // console.log(entries);
@@ -75,16 +87,6 @@ function getDependenciesFromFiles({includePath, webModulesPrefix}) {
 
   return {input, deps};
 }
-
-const {input, deps} = getDependenciesFromFiles({
-  includePath: 'public/**/*.js',
-  webModulesPrefix: '/web_modules/',
-});
-
-// TODO: install dependencies for the user via some kind of NPM library
-
-console.log(input);
-console.log(deps);
 
 // require('process').exit(1);
 
