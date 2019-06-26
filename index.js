@@ -1,5 +1,4 @@
 const rollup = require('rollup');
-
 const commonjs = require('rollup-plugin-commonjs');
 const resolve = require('rollup-plugin-node-resolve');
 const rollupPluginReplace = require('rollup-plugin-replace');
@@ -14,35 +13,7 @@ const path = require('path');
 const fg = require('fast-glob');
 const fs = require('fs');
 
-const entries = fg.sync(path.join(__dirname, 'public', '/**/*.js'));
-// console.log(entries);
-
-const walk = inject(acornWalk);
-const allImportedModules = [];
-entries.forEach(entry => {
-  const src = fs.readFileSync(entry, 'utf-8');
-  const ast = acorn.Parser.extend(dynamicImport).parse(src, { sourceType: 'module' });
-  const result = walk.ancestor(ast, {
-    ImportDeclaration(node) {
-      const mod = node.source.value;
-      allImportedModules.push(mod);
-    },
-    ExportNamedDeclaration(node) {
-      if (node.source && node.source.type === 'Literal') {
-        allImportedModules.push(node.source.value);
-      }
-    },
-    Import(node, ancestors) {
-      const expr = ancestors[ancestors.length - 2].arguments[0];
-      if (expr.type === 'Literal') {
-        const mod = expr.value;
-        allImportedModules.push(mod);
-      }
-    },
-  }, { ...walk.base });
-  // console.log(result);
-});
-
+// meh why not
 Array.prototype.unique = function() {
   const that = [];
   this.forEach(item => {
@@ -51,20 +22,69 @@ Array.prototype.unique = function() {
   return that;
 };
 
-const webModules = allImportedModules
-      .filter(mod => mod.startsWith('/web_modules/'))
-      .map(mod => mod.replace(/^\/web_modules\//, ''))
-      .sort()
-      .unique();
 
-const input = {};
+function getDependenciesFromFiles({includePath, webModulesPrefix}) {
+  const entries = fg.sync(path.join(__dirname, includePath));
+  // console.log(entries);
 
-webModules.forEach(mod => {
-  mod = mod.replace(/.js$/, '');
-  input[mod] = mod.replace(/@\d+(\.\d+)*/, '');
+  const walk = inject(acornWalk);
+  const allImportedModules = [];
+  entries.forEach(entry => {
+    const src = fs.readFileSync(entry, 'utf-8');
+    const ast = acorn.Parser.extend(dynamicImport).parse(src, { sourceType: 'module' });
+    const result = walk.ancestor(ast, {
+      ImportDeclaration(node) {
+        const mod = node.source.value;
+        allImportedModules.push(mod);
+      },
+      ExportNamedDeclaration(node) {
+        if (node.source && node.source.type === 'Literal') {
+          allImportedModules.push(node.source.value);
+        }
+      },
+      Import(node, ancestors) {
+        const expr = ancestors[ancestors.length - 2].arguments[0];
+        if (expr.type === 'Literal') {
+          const mod = expr.value;
+          allImportedModules.push(mod);
+        }
+      },
+    }, { ...walk.base });
+    // console.log(result);
+  });
+
+  const webModules = allImportedModules
+        .filter(mod => mod.startsWith(webModulesPrefix))
+        .map(mod => mod.replace(new RegExp('^' + webModulesPrefix), ''))
+        .sort()
+        .unique();
+
+  const input = {};
+  const vMatch = /@\d+(\.\d+)*/;
+
+  const deps = [];
+
+  webModules.forEach(mod => {
+    mod = mod.replace(/.js$/, '');
+    let version = mod.match(vMatch);
+    if (version) version = version[0].substr(1);
+    const modWithoutVersion = mod.replace(vMatch, '');
+    deps.push([modWithoutVersion, version]);
+    input[mod] = modWithoutVersion;
+  });
+
+  return {input, deps};
+}
+
+const {input, deps} = getDependenciesFromFiles({
+  includePath: 'public/**/*.js',
+  webModulesPrefix: '/web_modules/',
 });
 
+// TODO: install dependencies for the user via some kind of NPM library
+
 console.log(input);
+console.log(deps);
 
 // require('process').exit(1);
 
