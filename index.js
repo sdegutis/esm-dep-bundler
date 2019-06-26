@@ -56,7 +56,7 @@ const input = {};
 
 webModules.forEach(mod => {
   mod = mod.replace(/.js$/, '');
-  input[mod] = mod;
+  input[mod] = mod.replace(/@\d+(\.\d+)*/, '');
 });
 
 console.log(input);
