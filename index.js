@@ -13,6 +13,8 @@ const path = require('path');
 const fg = require('fast-glob');
 const fs = require('fs');
 
+const chokidar = require('chokidar');
+
 require('./polyfills.js');
 
 const includePath = 'public/**/*.js';
@@ -23,9 +25,16 @@ const aliasesOstensiblyFromPackageJson = {
   'styled-components': 'node_modules/styled-components/dist/styled-components.browser.cjs.js',
 };
 
-// TODO: install dependencies for the user via some kind of NPM library
-// exclude: 'public/web_modules/**',
-// include: 'public/**',
+chokidar.watch(includePath, {
+  ignoreInitial: true,
+  ignored: [
+    /(^|[\/\\])\../, // dot-files
+    outDir,
+  ],
+}).on('all', (event, path) => {
+  console.log(event, path);
+  run();
+});
 
 run();
 
@@ -52,6 +61,8 @@ function run() {
       sourcemap: false,
       exports: 'named',
       chunkFileNames: 'common/[name]-[hash].js',
+    }).then(() => {
+      console.log('done.');
     });
   });
 }
