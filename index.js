@@ -19,20 +19,20 @@ const includePath = 'public/**/*.js';
 const webModulesPrefix = '/web_modules/';
 const outDir = 'public/web_modules';
 
-const { input, deps } = getDependenciesFromFiles({ includePath, webModulesPrefix });
+const { rollupInput, npmDeps } = getDependenciesFromFiles({ includePath, webModulesPrefix });
 
 // TODO: install dependencies for the user via some kind of NPM library
     // exclude: 'public/web_modules/**',
     // include: 'public/**',
 
 
-console.log(input);
-console.log(deps);
+console.log(rollupInput);
+console.log(npmDeps);
 
 rimraf.sync(outDir);
 
 rollup.rollup({
-  input,
+  input: rollupInput,
   plugins: [
     replaceProcessEnv(),
     renameModuleAliases(),
@@ -89,21 +89,21 @@ function getDependenciesFromFiles({includePath, webModulesPrefix}) {
         .sort()
         .unique();
 
-  const input = {};
+  const rollupInput = {};
   const vMatch = /@\d+(\.\d+)*/;
 
-  const deps = [];
+  const npmDeps = [];
 
   webModules.forEach(mod => {
     mod = mod.replace(/.js$/, '');
     let version = mod.match(vMatch);
     if (version) version = version[0].substr(1);
     const modWithoutVersion = mod.replace(vMatch, '');
-    deps.push([modWithoutVersion, version]);
-    input[mod] = modWithoutVersion;
+    npmDeps.push([modWithoutVersion, version]);
+    rollupInput[mod] = modWithoutVersion;
   });
 
-  return {input, deps};
+  return {rollupInput, npmDeps};
 }
 
 function replaceProcessEnv() {
