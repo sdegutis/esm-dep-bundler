@@ -48,24 +48,28 @@ const webModules = allImportedModules
       .sort()
       .unique();
 
+const input = {};
+
 webModules.forEach(mod => {
-  console.log(mod);
+  mod = mod.replace(/.js$/, '');
+  input[mod] = mod;
 });
 
-require('process').exit(1);
+console.log(input);
 
+// require('process').exit(1);
 
-
+// input = {
+//   'styled-components': 'styled-components',
+//   'styled-icons/fa-solid/Clipboard': 'styled-icons/fa-solid/Clipboard',
+//   'Chart.js': 'Chart.js',
+//   'react': 'react',
+//   'react-dom': 'react-dom',
+// }
 
 
 export default {
-  input: {
-    'styled-components': 'styled-components',
-    'styled-icons/fa-solid/Clipboard': 'styled-icons/fa-solid/Clipboard',
-    'Chart': 'Chart.js',
-    'react': 'react',
-    'react-dom': 'react-dom',
-  },
+  input,
   output: {
     dir: 'out',
     format: 'esm',
@@ -74,20 +78,21 @@ export default {
     chunkFileNames: 'common/[name]-[hash].js',
   },
   plugins: [
-    renameHardcodedTest(),
+    renameModuleAliases(),
     resolve(),
     commonjs(),
   ],
 };
 
-function renameHardcodedTest() {
+const aliases = {
+  'styled-components': 'node_modules/styled-components/dist/styled-components.browser.cjs.js',
+};
+
+function renameModuleAliases() {
   return {
-    name: 'rename-hardcoded-test',
+    name: 'pika:rename-module-aliases',
     resolveId(src, loader) {
-      if (src === 'styled-components') {
-        return 'node_modules/styled-components/dist/styled-components.browser.cjs.js';
-      }
-      return null;
+      return aliases[src] || null;
     },
   };
 }
