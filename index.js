@@ -1,4 +1,4 @@
-const rollup = require('rollup');
+const rollup = require('rollup').rollup;
 const commonjs = require('rollup-plugin-commonjs');
 const resolve = require('rollup-plugin-node-resolve');
 const rollupPluginReplace = require('rollup-plugin-replace');
@@ -35,7 +35,7 @@ console.log(npmDeps);
 
 rimraf.sync(outDir);
 
-rollup.rollup({
+rollup({
   input: rollupInput,
   plugins: [
     replaceProcessEnv(),
