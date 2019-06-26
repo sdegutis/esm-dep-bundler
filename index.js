@@ -1,15 +1,18 @@
-import commonjs from 'rollup-plugin-commonjs';
-import resolve from 'rollup-plugin-node-resolve';
-import rollupPluginReplace from 'rollup-plugin-replace';
+const rollup = require('rollup');
 
-import * as acorn from 'acorn';
-import * as acornWalk from 'acorn-walk';
-import inject from 'acorn-dynamic-import/lib/walk';
-import dynamicImport from 'acorn-dynamic-import';
+const commonjs = require('rollup-plugin-commonjs');
+const resolve = require('rollup-plugin-node-resolve');
+const rollupPluginReplace = require('rollup-plugin-replace');
 
-import path from 'path';
-import fg from 'fast-glob';
-import fs from 'fs';
+const acorn = require('acorn');
+const acornWalk = require('acorn-walk');
+const inject = require('acorn-dynamic-import/lib/walk').default;
+const dynamicImport = require('acorn-dynamic-import').default;
+
+const rimraf = require('rimraf');
+const path = require('path');
+const fg = require('fast-glob');
+const fs = require('fs');
 
 const entries = fg.sync(path.join(__dirname, 'public', '/**/*.js'));
 // console.log(entries);
@@ -69,7 +72,7 @@ console.log(input);
 // }
 
 
-export default {
+const config = {
   input,
   output: {
     dir: 'public/web_modules',
@@ -84,6 +87,10 @@ export default {
     resolve(),
     commonjs(),
   ],
+  watch: {
+    exclude: 'public/web_modules/**',
+    include: 'public/**',
+  },
 };
 
 const aliases = {
@@ -104,3 +111,9 @@ function renameModuleAliases() {
     },
   };
 }
+
+rimraf.sync('public/web_modules');
+
+const watcher = rollup.watch(config);
+
+watcher.on('event', event => console.log(event.code));
