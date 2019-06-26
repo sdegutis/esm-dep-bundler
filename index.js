@@ -15,11 +15,11 @@ const fs = require('fs');
 
 require('./polyfills.js');
 
+const includePath = 'public/**/*.js';
+const webModulesPrefix = '/web_modules/';
+const outDir = 'public/web_modules';
 
-const {input, deps} = getDependenciesFromFiles({
-  includePath: 'public/**/*.js',
-  webModulesPrefix: '/web_modules/',
-});
+const { input, deps } = getDependenciesFromFiles({ includePath, webModulesPrefix });
 
 // TODO: install dependencies for the user via some kind of NPM library
     // exclude: 'public/web_modules/**',
@@ -29,7 +29,7 @@ const {input, deps} = getDependenciesFromFiles({
 console.log(input);
 console.log(deps);
 
-rimraf.sync('public/web_modules');
+rimraf.sync(outDir);
 
 rollup.rollup({
   input,
@@ -41,7 +41,7 @@ rollup.rollup({
   ],
 }).then(bundle => {
   bundle.write({
-    dir: 'public/web_modules',
+    dir: outDir,
     format: 'esm',
     sourcemap: false,
     exports: 'named',
