@@ -132,7 +132,7 @@ function getDependenciesFromFiles({includePath, webModulesPrefix}) {
     let version = mod.match(vMatch);
     if (version) version = version[0].substr(1);
     const modWithoutVersion = mod.replace(vMatch, '');
-    npmDeps.push([modWithoutVersion, version]);
+    npmDeps.push([modWithoutVersion.split('/')[0], version]);
     rollupInput[mod] = modWithoutVersion;
   });
 
