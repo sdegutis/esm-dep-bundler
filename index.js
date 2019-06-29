@@ -86,7 +86,7 @@ function installDeps(deps) {
   });
 }
 
-function getDependenciesFromFiles({includePath, webModulesPrefix}) {
+function getDependenciesFromFiles({ includePath, webModulesPrefix }) {
   const entries = fg.sync(path.join(__dirname, includePath));
   // console.log(entries);
 
@@ -117,10 +117,10 @@ function getDependenciesFromFiles({includePath, webModulesPrefix}) {
   });
 
   const webModules = allImportedModules
-        .filter(mod => mod.startsWith(webModulesPrefix))
-        .map(mod => mod.substr(webModulesPrefix.length))
-        .sort()
-        .unique();
+    .filter(mod => mod.startsWith(webModulesPrefix))
+    .map(mod => mod.substr(webModulesPrefix.length))
+    .sort()
+    .unique();
 
   const rollupInput = {};
   const vMatch = /@\d+(\.\d+)*/;
@@ -136,7 +136,7 @@ function getDependenciesFromFiles({includePath, webModulesPrefix}) {
     rollupInput[mod] = modWithoutVersion;
   });
 
-  return {rollupInput, npmDeps};
+  return { rollupInput, npmDeps };
 }
 
 function replaceProcessEnv() {
