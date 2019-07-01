@@ -16,7 +16,15 @@ const fs = require('fs');
 const { execSync } = require('child_process');
 const chokidar = require('chokidar');
 
-require('./polyfills.js');
+// meh why not
+Array.prototype.unique = function() {
+  const seen = {};
+  return this.filter(item => {
+    const found = seen[item];
+    if (!found) seen[item] = true;
+    return !found;
+  });
+};
 
 const includePath = 'public/**/*.js';
 const webModulesPrefix = '/web_modules/';
