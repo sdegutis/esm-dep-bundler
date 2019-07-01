@@ -16,6 +16,8 @@ const fs = require('fs');
 const { execSync } = require('child_process');
 const chokidar = require('chokidar');
 
+const { argv } = require('yargs');
+
 // meh why not
 Array.prototype.unique = function() {
   const seen = {};
@@ -26,9 +28,9 @@ Array.prototype.unique = function() {
   });
 };
 
-const includePath = 'testcase/public/**/*.js';
-const webModulesPrefix = '/web_modules/';
-const outDir = 'testcase/public/web_modules';
+const includePath = argv.includePath || 'public/**/*.js';
+const webModulesPrefix = argv.webModulesPrefix || '/web_modules/';
+const outDir = argv.outDir || 'public/web_modules';
 
 
 let latestDeps = getInstalledDeps();
