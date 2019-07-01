@@ -13,8 +13,7 @@ const path = require('path');
 const fg = require('fast-glob');
 const fs = require('fs');
 
-const npm = require('global-npm');
-
+const { execSync } = require('child_process');
 const chokidar = require('chokidar');
 
 require('./polyfills.js');
@@ -25,6 +24,11 @@ const outDir = 'public/web_modules';
 
 const aliasesOstensiblyFromPackageJson = {
   'styled-components': 'node_modules/styled-components/dist/styled-components.browser.cjs.js',
+};
+
+const npmAliases = {
+  'react': 'npm:@reactesm/react',
+  'react-dom': 'npm:@reactesm/react-dom',
 };
 
 chokidar.watch(includePath, {
@@ -43,7 +47,7 @@ run();
 function run() {
   const { rollupInput, npmDeps } = getDependenciesFromFiles({ includePath, webModulesPrefix });
 
-  installDeps(npmDeps);
+  installDeps(npmDeps, npmAliases);
 
   console.log(rollupInput);
   console.log(npmDeps);
@@ -73,17 +77,21 @@ function run() {
 
 
 
+function maybeAlias(name, aliases, version) {
+  const alias = aliases[name];
+  if (alias) name += '@' + alias;
+  if (version && !alias) name += '@' + version;
+  return name;
+}
 
+function installDeps(deps, aliases, version) {
+  const depStrings = deps
+    .map(([name, version]) => maybeAlias(name, aliases))
+    .unique()
+    .join(' ');
+  console.log('installing...', depStrings);
 
-function installDeps(deps) {
-  const depStrings = deps.map(([name,version]) => `${name}@${version||'latest'}`);
-  console.log(depStrings);
-  npm.load({ loglevel: 'silent' }, (err) => {
-    npm.commands.install('.', depStrings, (err) => {
-      console.log('installed via npm', err);
-    });
-    console.log('loaded npm', err);
-  });
+  execSync(`npm install ${depStrings}`);
 }
 
 function getDependenciesFromFiles({ includePath, webModulesPrefix }) {
