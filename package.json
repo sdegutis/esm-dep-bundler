@@ -9,14 +9,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "chart.js": "^2.8.0",
-    "htm": "^2.1.1",
-    "react": "npm:@reactesm/react@^0.1.0",
-    "react-dom": "npm:@reactesm/react-dom@^0.1.1",
-    "styled-components": "^4.3.2",
-    "styled-icons": "^8.1.0"
-  },
   "devDependencies": {
     "acorn": "^6.1.1",
     "acorn-dynamic-import": "^4.0.0",
