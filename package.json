@@ -9,6 +9,7 @@
   "keywords": [],
   "author": "",
   "license": "MIT",
+  "bin": "./index.js",
   "dependencies": {
     "acorn": "^6.1.1",
     "acorn-dynamic-import": "^4.0.0",
