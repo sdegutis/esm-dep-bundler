@@ -26,9 +26,9 @@ Array.prototype.unique = function() {
   });
 };
 
-const includePath = 'public/**/*.js';
+const includePath = 'testcase/public/**/*.js';
 const webModulesPrefix = '/web_modules/';
-const outDir = 'public/web_modules';
+const outDir = 'testcase/public/web_modules';
 
 
 let latestDeps = getInstalledDeps();
