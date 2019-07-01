@@ -22,6 +22,16 @@ const includePath = 'public/**/*.js';
 const webModulesPrefix = '/web_modules/';
 const outDir = 'public/web_modules';
 
+
+let latestDeps = getInstalledDeps();
+console.log(latestDeps);
+/* process.exit(1); */
+
+function getInstalledDeps() {
+  const alreadyInstalledDeps = require('./package.json').dependencies || {};
+  return Object.keys(alreadyInstalledDeps);
+}
+
 const aliasesOstensiblyFromPackageJson = {
   'styled-components': 'node_modules/styled-components/dist/styled-components.browser.cjs.js',
 };
@@ -85,13 +95,24 @@ function maybeAlias(name, aliases, version) {
 }
 
 function installDeps(deps, aliases, version) {
-  const depStrings = deps
-    .map(([name, version]) => maybeAlias(name, aliases))
-    .unique()
-    .join(' ');
-  console.log('installing...', depStrings);
+  const depsToInstall = deps.filter(([name, version]) => !latestDeps.includes(name));
 
-  execSync(`npm install ${depStrings}`);
+  depsToInstall.forEach(([name, version]) => {
+    latestDeps.push(name);
+  });
+
+  if (depsToInstall.length > 0) {
+    const depStrings = depsToInstall
+      .map(([name, version]) => maybeAlias(name, aliases))
+      .unique()
+      .join(' ');
+    console.log('installing: ', JSON.stringify(depStrings));
+
+    execSync(`npm install ${depStrings}`);
+  }
+  else {
+    console.log('deps up to date; skipping npm-install');
+  }
 }
 
 function getDependenciesFromFiles({ includePath, webModulesPrefix }) {
