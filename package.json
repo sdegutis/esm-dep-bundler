@@ -1,15 +1,15 @@
 {
-  "name": "rtest",
-  "version": "1.0.0",
-  "description": "",
+  "name": "esm-dep-bundler",
+  "version": "0.0.1",
+  "description": "Experimental ESM dependency bundler",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "devDependencies": {
+  "license": "MIT",
+  "dependencies": {
     "acorn": "^6.1.1",
     "acorn-dynamic-import": "^4.0.0",
     "acorn-walk": "^6.1.1",
