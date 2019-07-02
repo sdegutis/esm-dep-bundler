@@ -19,7 +19,7 @@ const fs = require('fs');
 const { execSync } = require('child_process');
 const chokidar = require('chokidar');
 
-const { argv } = require('yargs');
+const yargs = require('yargs');
 
 // meh why not
 Array.prototype.unique = function() {
@@ -31,9 +31,15 @@ Array.prototype.unique = function() {
   });
 };
 
-const includePath = argv.includePath || 'public/**/*.js';
-const webModulesPrefix = argv.webModulesPrefix || '/web_modules/';
-const outDir = argv.outDir || 'public/web_modules';
+const {
+  includePath,
+  webModulesPrefix,
+  outDir,
+} = yargs
+      .option('include-path', {alias: 'i', default: 'public/**/*.js'})
+      .option('out-dir', {alias: 'o', default: 'public/web_modules'})
+      .option('web-modules-prefix', {alias: 'p', default: '/web_modules/'})
+      .argv;
 
 
 let latestDeps = getInstalledDeps();
