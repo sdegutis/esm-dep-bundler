@@ -6,15 +6,9 @@
 
 2. Run `npm i -P esm-dep-bundler`
 
-3. (TODO)
+... (TODO)
 
-``` bash
-$ mkdir tmp
-$ cd tmp
-$ npm init -y
-$
-$ npx esm-dep-bundler
-```
+N. npx esm-dep-bundler
 
 ### CLI
 
