@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const rollup = require('rollup').rollup;
 const commonjs = require('rollup-plugin-commonjs');
 const resolve = require('rollup-plugin-node-resolve');
