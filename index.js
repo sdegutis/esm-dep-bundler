@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+'use strict';
 
 const rollup = require('rollup').rollup;
 const commonjs = require('rollup-plugin-commonjs');
