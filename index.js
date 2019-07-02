@@ -129,7 +129,7 @@ function installDeps(deps, aliases, version) {
 }
 
 function getDependenciesFromFiles({ includePath, webModulesPrefix }) {
-  const entries = fg.sync(path.join(__dirname, includePath));
+  const entries = fg.sync(includePath);
   // console.log(entries);
 
   const walk = inject(acornWalk);
