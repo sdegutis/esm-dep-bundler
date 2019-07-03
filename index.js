@@ -21,6 +21,10 @@ const chokidar = require('chokidar');
 
 const yargs = require('yargs');
 
+const https = require('https');
+const mime = require('mime-types');
+const selfsigned = require('selfsigned');
+
 // meh why not
 Array.prototype.unique = function() {
   const seen = {};
@@ -74,6 +78,7 @@ const npmAliases = {
 
 listenForPublicFileChanges();
 watchForBundling();
+startFileServer();
 
 function watchForBundling() {
   const { rollupInput, npmDeps } = getDependenciesFromFiles({ includePath, webModulesPrefix });
@@ -223,4 +228,60 @@ function listenForPublicFileChanges() {
     console.log(event, path);
     run();
   });
+}
+
+function startFileServer() {
+  const prefix = './public';
+  const indexFile = '/index.html';
+
+  const certPath = path.join(__dirname, 'cert.pem');
+  console.log("checking for cert file");
+  if (!fs.existsSync(certPath)) {
+    console.log("didn't find it; creating now...");
+    const pems = selfsigned.generate([
+      { name: 'commonName', value: 'localhost' },
+    ]);
+    const certData = pems.private + pems.cert;
+    fs.writeFileSync(certPath, certData, { encoding: 'utf8' });
+  }
+  const cert = fs.readFileSync(certPath);
+
+  const opts = {
+    key: cert,
+    cert: cert,
+  };
+
+  const server = https.createServer(opts, (req, res) => {
+    let path = req.url;
+    if (path === '/') path = indexFile;
+    path = prefix + path;
+    fs.exists(path, exists => {
+      if (!exists) {
+        path = prefix + indexFile;
+      }
+      res.setHeader(
+        'Content-Type',
+        mime.contentType(mime.lookup(path)) || 'application/octet-stream'
+      );
+      fs.createReadStream(path).pipe(res);
+    });
+  });
+
+  const port = 8080;
+  server.listen(port, () => {
+    console.log(`Listening on port ${port}`);
+  });
+
+  /**
+   * Dev server features we need:
+   *
+   * [x] serve files from ./public
+   * [x] get mime-types right
+   * [x] use https
+   * [x] serve 404s as ./public/index.html
+   * [ ] proxy /api/** /* to another server
+   * [ ] make http optional via yargs
+   * [ ] make public file configurable via yargs
+   * [ ] make 404-based index file configurable via yargs
+   */
 }
