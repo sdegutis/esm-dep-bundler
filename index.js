@@ -72,17 +72,7 @@ const npmAliases = {
   'react-dom': 'npm:@reactesm/react-dom',
 };
 
-chokidar.watch(includePath, {
-  ignoreInitial: true,
-  ignored: [
-    /(^|[\/\\])\../, // dot-files
-    outDir,
-  ],
-}).on('all', (event, path) => {
-  console.log(event, path);
-  run();
-});
-
+listenForPublicFileChanges();
 watchForBundling();
 
 function watchForBundling() {
@@ -220,4 +210,17 @@ function cleanFilesFirst(outDir) {
       rimraf.sync(outDir);
     },
   }
+}
+
+function listenForPublicFileChanges() {
+  chokidar.watch(includePath, {
+    ignoreInitial: true,
+    ignored: [
+      /(^|[\/\\])\../, // dot-files
+      outDir,
+    ],
+  }).on('all', (event, path) => {
+    console.log(event, path);
+    run();
+  });
 }
