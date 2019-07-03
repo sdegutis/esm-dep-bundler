@@ -96,6 +96,11 @@
         export {default as React} from '/web_modules/react@16.8.6.js';
         ```
 
+4. `cd public && python -m SimpleHTTPServer`
+
+    Note: I'm thinking Esm-Dep-Bundler should maybe provide it's own
+    little file-server, too. But that seems out of the scope of ESM
+    dependency bundling, so it might need to be renamed if I add that.
 
 ### CLI
 
