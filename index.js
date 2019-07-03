@@ -93,8 +93,6 @@ function run() {
   console.log(rollupInput);
   console.log(npmDeps);
 
-  rimraf.sync(outDir);
-
   rollup({
     input: rollupInput,
     plugins: [
@@ -102,6 +100,7 @@ function run() {
       renameModuleAliases(aliasesOstensiblyFromPackageJson),
       resolve(),
       commonjs(),
+      cleanFilesFirst(outDir),
     ],
   }).then(bundle => {
     bundle.write({
@@ -212,4 +211,13 @@ function renameModuleAliases(aliases) {
       return aliases[src] || null;
     },
   };
+}
+
+function cleanFilesFirst(outDir) {
+  return {
+    name: 'esmdb:clean-files-first',
+    buildEnd() {
+      rimraf.sync(outDir);
+    },
+  }
 }
