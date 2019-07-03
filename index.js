@@ -26,7 +26,10 @@ const https = require('https');
 const mime = require('mime-types');
 const selfsigned = require('selfsigned');
 
+
+const PKG_CONFIG_KEY = 'ESM-Dep-Bundler';
 run();
+
 
 function run() {
   installPolyfills();
@@ -60,26 +63,20 @@ function run() {
         })
         .argv;
 
-  let latestDeps = getInstalledDeps();
+  const pkg = require(path.join(process.cwd(), './package.json'));
+
+  const alreadyInstalledDeps = pkg.dependencies || {};
+  const latestDeps = Object.keys(alreadyInstalledDeps);
   console.log(latestDeps);
 
-  const fileAliases = {
-    'styled-components': 'node_modules/styled-components/dist/styled-components.browser.cjs.js',
-  };
+  const { fileAliases, npmAliases } = pkg[PKG_CONFIG_KEY];
 
-  const npmAliases = {
-    'react': 'npm:@reactesm/react',
-    'react-dom': 'npm:@reactesm/react-dom',
-  };
+  console.log('fileAliases =', fileAliases);
+  console.log('npmAliases =', npmAliases);
 
   listenForPublicFileChanges(includePath, outDir);
   watchForBundling({ latestDeps, includePath, webModulesPrefix, outDir, npmAliases, fileAliases });
   startFileServer(useHttps);
-}
-
-function getInstalledDeps() {
-  const alreadyInstalledDeps = require(path.join(process.cwd(), './package.json')).dependencies || {};
-  return Object.keys(alreadyInstalledDeps);
 }
 
 function watchForBundling({ latestDeps, includePath, webModulesPrefix, outDir, npmAliases, fileAliases }) {
