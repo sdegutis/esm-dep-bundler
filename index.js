@@ -36,9 +36,21 @@ const {
   webModulesPrefix,
   outDir,
 } = yargs
-      .option('include-path', {alias: 'i', default: 'public/**/*.js'})
-      .option('out-dir', {alias: 'o', default: 'public/web_modules'})
-      .option('web-modules-prefix', {alias: 'p', default: '/web_modules/'})
+      .option('include-path', {
+        alias: 'i',
+        description: "A 'glob' to match JS/TS files to search for ESM imports/exports.",
+        default: 'public/**/*.js',
+      })
+      .option('out-dir', {
+        alias: 'o',
+        description: "The directory to output all your dependencies into.",
+        default: 'public/web_modules',
+      })
+      .option('web-modules-prefix', {
+        alias: 'p',
+        description: "The path of your web modules relative to your web server's root public directory.",
+        default: '/web_modules/',
+      })
       .argv;
 
 
