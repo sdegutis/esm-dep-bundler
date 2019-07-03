@@ -17,84 +17,84 @@
 
 3. Create these files:
 
-* public/index.js
+    * public/index.js
 
-    ``` html
-    <!DOCTYPE html>
-    <html>
+        ``` html
+        <!DOCTYPE html>
+        <html>
 
-      <head>
-        <title>Test</title>
-        <script defer type="module" src="/app/main.js"></script>
-      </head>
+          <head>
+            <title>Test</title>
+            <script defer type="module" src="/app/main.js"></script>
+          </head>
 
-      <body>
-        <div id="root"></div>
-      </body>
+          <body>
+            <div id="root"></div>
+          </body>
 
-    </html>
-    ```
+        </html>
+        ```
 
-* public/app/main.js
+    * public/app/main.js
 
-    ``` javascript
-    import { ReactDOM } from '/app/deps.js';
-    import { React } from '/app/deps.js';
-    import { html } from '/web_modules/htm/react.js';
-    import styled from '/web_modules/styled-components.js';
-    import useCount from './util.js';
+        ``` javascript
+        import { ReactDOM } from '/app/deps.js';
+        import { React } from '/app/deps.js';
+        import { html } from '/web_modules/htm/react.js';
+        import styled from '/web_modules/styled-components.js';
+        import useCount from './util.js';
 
-    function Greeting(props) {
-      return html`
-        <div>Hello <b>${props.name}</b>!</div>
-      `;
-    }
+        function Greeting(props) {
+          return html`
+            <div>Hello <b>${props.name}</b>!</div>
+          `;
+        }
 
-    function Counter(props) {
-      const [count, increase] = useCount();
-      return html`
-        <div>
-          Count: <b>${count}</b> <button onClick=${increase}>+1</button>
-        </div>
-      `;
-    }
+        function Counter(props) {
+          const [count, increase] = useCount();
+          return html`
+            <div>
+              Count: <b>${count}</b> <button onClick=${increase}>+1</button>
+            </div>
+          `;
+        }
 
-    function App(props) {
-      const [name, setName] = React.useState('world');
-      const changeName = (e) => {
-        setName(e.target.value);
-      };
-      return html`
-        <${Counter}/>
-        <div>Greet: <input autoFocus value=${name} onChange=${changeName} /></div>
-        <${Greeting} name=${name}/>
-      `;
-    }
+        function App(props) {
+          const [name, setName] = React.useState('world');
+          const changeName = (e) => {
+            setName(e.target.value);
+          };
+          return html`
+            <${Counter}/>
+            <div>Greet: <input autoFocus value=${name} onChange=${changeName} /></div>
+            <${Greeting} name=${name}/>
+          `;
+        }
 
-    ReactDOM.render(
-      html`<${App} bar='you kid'/>`,
-      document.getElementById('root')
-    );
-    ```
+        ReactDOM.render(
+          html`<${App} bar='you kid'/>`,
+          document.getElementById('root')
+        );
+        ```
 
-* public/app/util.js
+    * public/app/util.js
 
-    ``` javascript
-    import { React } from '/app/deps.js';
+        ``` javascript
+        import { React } from '/app/deps.js';
 
-    export default function useCount() {
-      const [count, setCount] = React.useState(0);
-      const increase = () => setCount(oldCount => oldCount + 1);
-      return [count, increase];
-    }
-    ```
+        export default function useCount() {
+          const [count, setCount] = React.useState(0);
+          const increase = () => setCount(oldCount => oldCount + 1);
+          return [count, increase];
+        }
+        ```
 
-* public/app/deps.js
+    * public/app/deps.js
 
-    ``` javascript
-    export {default as ReactDOM} from '/web_modules/react-dom@16.8.6.js';
-    export {default as React} from '/web_modules/react@16.8.6.js';
-    ```
+        ``` javascript
+        export {default as ReactDOM} from '/web_modules/react-dom@16.8.6.js';
+        export {default as React} from '/web_modules/react@16.8.6.js';
+        ```
 
 
 ### CLI
