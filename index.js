@@ -21,6 +21,7 @@ const chokidar = require('chokidar');
 
 const yargs = require('yargs');
 
+const http = require('http');
 const https = require('https');
 const mime = require('mime-types');
 const selfsigned = require('selfsigned');
@@ -39,11 +40,18 @@ const {
   includePath,
   webModulesPrefix,
   outDir,
+  useHttps,
 } = yargs
       .option('include-path', {
         alias: 'i',
         description: "A 'glob' to match JS/TS files to search for ESM imports/exports.",
         default: 'public/**/*.js',
+      })
+      .option('use-https', {
+        type: 'boolean',
+        alias: 's',
+        description: "Use HTTPS for the dev-server.",
+        default: false,
       })
       .option('out-dir', {
         alias: 'o',
@@ -234,24 +242,25 @@ function startFileServer() {
   const prefix = './public';
   const indexFile = '/index.html';
 
-  const certPath = path.join(__dirname, 'cert.pem');
-  console.log("checking for cert file");
-  if (!fs.existsSync(certPath)) {
-    console.log("didn't find it; creating now...");
-    const pems = selfsigned.generate([
-      { name: 'commonName', value: 'localhost' },
-    ]);
-    const certData = pems.private + pems.cert;
-    fs.writeFileSync(certPath, certData, { encoding: 'utf8' });
+  const opts = {};
+  if (useHttps) {
+    const certPath = path.join(__dirname, 'cert.pem');
+    console.log("checking for cert file");
+    if (!fs.existsSync(certPath)) {
+      console.log("didn't find it; creating now...");
+      const pems = selfsigned.generate([
+        { name: 'commonName', value: 'localhost' },
+      ]);
+      const certData = pems.private + pems.cert;
+      fs.writeFileSync(certPath, certData, { encoding: 'utf8' });
+    }
+    const cert = fs.readFileSync(certPath);
+
+    opts.key = opts.cert = cert;
   }
-  const cert = fs.readFileSync(certPath);
 
-  const opts = {
-    key: cert,
-    cert: cert,
-  };
-
-  const server = https.createServer(opts, (req, res) => {
+  const httpCtor = useHttps ? https : http;
+  const server = httpCtor.createServer(opts, (req, res) => {
     let path = req.url;
     if (path === '/') path = indexFile;
     path = prefix + path;
@@ -280,7 +289,7 @@ function startFileServer() {
    * [x] use https
    * [x] serve 404s as ./public/index.html
    * [ ] proxy /api/** /* to another server
-   * [ ] make http optional via yargs
+   * [x] make http optional via yargs
    * [ ] make public file configurable via yargs
    * [ ] make 404-based index file configurable via yargs
    */
