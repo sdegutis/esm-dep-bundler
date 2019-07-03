@@ -59,7 +59,7 @@ console.log(latestDeps);
 /* process.exit(1); */
 
 function getInstalledDeps() {
-  const alreadyInstalledDeps = require('./package.json').dependencies || {};
+  const alreadyInstalledDeps = require(path.join(process.cwd(), './package.json')).dependencies || {};
   return Object.keys(alreadyInstalledDeps);
 }
 
