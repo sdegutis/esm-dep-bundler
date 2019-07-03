@@ -1,6 +1,6 @@
 # ESM-Dep-Bundler
 
-*Just write JavaScript and let ESM-Dep-Bundler do the rest.*
+*Just write JavaScript and let ESM-Dep-Bundler fully prepare your dependencies.*
 
 ### Features
 
