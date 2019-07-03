@@ -207,7 +207,7 @@ function replaceProcessEnv() {
 
 function renameModuleAliases(aliases) {
   return {
-    name: 'pika:rename-module-aliases',
+    name: 'esmdb:rename-module-aliases',
     resolveId(src, loader) {
       return aliases[src] || null;
     },
