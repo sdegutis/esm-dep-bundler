@@ -26,72 +26,66 @@ const https = require('https');
 const mime = require('mime-types');
 const selfsigned = require('selfsigned');
 
-// meh why not
-Array.prototype.unique = function() {
-  const seen = {};
-  return this.filter(item => {
-    const found = seen[item];
-    if (!found) seen[item] = true;
-    return !found;
-  });
-};
+run();
 
-const {
-  includePath,
-  webModulesPrefix,
-  outDir,
-  useHttps,
-} = yargs
-      .option('include-path', {
-        alias: 'i',
-        description: "A 'glob' to match JS/TS files to search for ESM imports/exports.",
-        default: 'public/**/*.js',
-      })
-      .option('use-https', {
-        type: 'boolean',
-        alias: 's',
-        description: "Use HTTPS for the dev-server.",
-        default: false,
-      })
-      .option('out-dir', {
-        alias: 'o',
-        description: "The directory to output all your dependencies into.",
-        default: 'public/web_modules',
-      })
-      .option('web-modules-prefix', {
-        alias: 'p',
-        description: "The path of your web modules relative to your web server's root public directory.",
-        default: '/web_modules/',
-      })
-      .argv;
+function run() {
+  installPolyfills();
 
+  const {
+    includePath,
+    webModulesPrefix,
+    outDir,
+    useHttps,
+  } = yargs
+        .option('include-path', {
+          alias: 'i',
+          description: "A 'glob' to match JS/TS files to search for ESM imports/exports.",
+          default: 'public/**/*.js',
+        })
+        .option('use-https', {
+          type: 'boolean',
+          alias: 's',
+          description: "Use HTTPS for the dev-server.",
+          default: false,
+        })
+        .option('out-dir', {
+          alias: 'o',
+          description: "The directory to output all your dependencies into.",
+          default: 'public/web_modules',
+        })
+        .option('web-modules-prefix', {
+          alias: 'p',
+          description: "The path of your web modules relative to your web server's root public directory.",
+          default: '/web_modules/',
+        })
+        .argv;
 
-let latestDeps = getInstalledDeps();
-console.log(latestDeps);
-/* process.exit(1); */
+  let latestDeps = getInstalledDeps();
+  console.log(latestDeps);
+
+  const fileAliases = {
+    'styled-components': 'node_modules/styled-components/dist/styled-components.browser.cjs.js',
+  };
+
+  const npmAliases = {
+    'react': 'npm:@reactesm/react',
+    'react-dom': 'npm:@reactesm/react-dom',
+  };
+
+  listenForPublicFileChanges(includePath, outDir);
+  watchForBundling({ latestDeps, includePath, webModulesPrefix, outDir, npmAliases, fileAliases });
+  startFileServer(useHttps);
+}
 
 function getInstalledDeps() {
   const alreadyInstalledDeps = require(path.join(process.cwd(), './package.json')).dependencies || {};
   return Object.keys(alreadyInstalledDeps);
 }
 
-const aliasesOstensiblyFromPackageJson = {
-  'styled-components': 'node_modules/styled-components/dist/styled-components.browser.cjs.js',
-};
-
-const npmAliases = {
-  'react': 'npm:@reactesm/react',
-  'react-dom': 'npm:@reactesm/react-dom',
-};
-
-listenForPublicFileChanges();
-watchForBundling();
-startFileServer();
-
-function watchForBundling() {
+function watchForBundling({ latestDeps, includePath, webModulesPrefix, outDir, npmAliases, fileAliases }) {
   const { rollupInput, npmDeps } = getDependenciesFromFiles({ includePath, webModulesPrefix });
 
-  installDeps(npmDeps, npmAliases);
+  installDeps(latestDeps, npmDeps, npmAliases);
 
   console.log(rollupInput);
   console.log(npmDeps);
@@ -100,7 +94,7 @@ function watchForBundling() {
     input: rollupInput,
     plugins: [
       replaceProcessEnv(),
-      renameModuleAliases(aliasesOstensiblyFromPackageJson),
+      renameModuleAliases(fileAliases),
       resolve(),
       commonjs(),
       cleanFilesFirst(outDir),
@@ -118,8 +112,6 @@ function watchForBundling() {
   });
 }
 
-
-
 function maybeAlias(name, aliases, version) {
   const alias = aliases[name];
   if (alias) name += '@' + alias;
@@ -127,7 +119,7 @@ function maybeAlias(name, aliases, version) {
   return name;
 }
 
-function installDeps(deps, aliases, version) {
+function installDeps(latestDeps, deps, aliases, version) {
   const depsToInstall = deps.filter(([name, version]) => !latestDeps.includes(name));
 
   depsToInstall.forEach(([name, version]) => {
@@ -136,9 +128,9 @@ function installDeps(deps, aliases, version) {
 
   if (depsToInstall.length > 0) {
     const depStrings = depsToInstall
-      .map(([name, version]) => maybeAlias(name, aliases))
-      .unique()
-      .join(' ');
+          .map(([name, version]) => maybeAlias(name, aliases))
+          .unique()
+          .join(' ');
     console.log('installing: ', JSON.stringify(depStrings));
 
     execSync(`npm install ${depStrings}`);
@@ -179,10 +171,10 @@ function getDependenciesFromFiles({ includePath, webModulesPrefix }) {
   });
 
   const webModules = allImportedModules
-    .filter(mod => mod.startsWith(webModulesPrefix))
-    .map(mod => mod.substr(webModulesPrefix.length))
-    .sort()
-    .unique();
+        .filter(mod => mod.startsWith(webModulesPrefix))
+        .map(mod => mod.substr(webModulesPrefix.length))
+        .sort()
+        .unique();
 
   const rollupInput = {};
   const vMatch = /@\d+(\.\d+)*/;
@@ -225,7 +217,7 @@ function cleanFilesFirst(outDir) {
   }
 }
 
-function listenForPublicFileChanges() {
+function listenForPublicFileChanges(includePath, outDir) {
   chokidar.watch(includePath, {
     ignoreInitial: true,
     ignored: [
@@ -238,7 +230,7 @@ function listenForPublicFileChanges() {
   });
 }
 
-function startFileServer() {
+function startFileServer(useHttps) {
   const prefix = './public';
   const indexFile = '/index.html';
 
@@ -293,4 +285,16 @@ function startFileServer() {
    * [ ] make public file configurable via yargs
    * [ ] make 404-based index file configurable via yargs
    */
+}
+
+function installPolyfills() {
+  // meh why not
+  Array.prototype.unique = function() {
+    const seen = {};
+    return this.filter(item => {
+      const found = seen[item];
+      if (!found) seen[item] = true;
+      return !found;
+    });
+  };
 }
