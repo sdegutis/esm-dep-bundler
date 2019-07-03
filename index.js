@@ -83,9 +83,9 @@ chokidar.watch(includePath, {
   run();
 });
 
-run();
+watchForBundling();
 
-function run() {
+function watchForBundling() {
   const { rollupInput, npmDeps } = getDependenciesFromFiles({ includePath, webModulesPrefix });
 
   installDeps(npmDeps, npmAliases);
