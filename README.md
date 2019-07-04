@@ -5,7 +5,7 @@
 ### Features
 
 - Scans your files for dependencies via `import` and `export` statements.
-- Installs dependencies via NPM for you (uses NPM CLI via `child_process`).
+- Installs NPM dependencies for you (via NPM via CLI via `child_process`).
 - Uses Rollup to compile your dependencies into a deployable folder ("web_modules").
 - Supports version in dependency names (to be cache-friendly).
 
