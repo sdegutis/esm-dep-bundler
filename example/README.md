@@ -4,7 +4,7 @@
 
 ``` bash
 $ npm init -y
-$ npm install ..
+$ npm install '..' # esm-dep-bundler is one dir above this
 $ ## add this to package.json
 
   "ESM-Dep-Bundler": {
