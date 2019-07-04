@@ -8,6 +8,7 @@
 - Installs NPM dependencies for you (via NPM via CLI via `child_process`).
 - Uses Rollup to compile your dependencies into a deployable folder ("web_modules").
 - Supports version in dependency names (to be cache-friendly).
+- Has built-in development web-server for your convenience.
 
 ### Usage / Sample
 
