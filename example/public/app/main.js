@@ -4,9 +4,14 @@ import { html } from '/web_modules/htm/react.js';
 import styled from '/web_modules/styled-components.js';
 import useCount from './util.js';
 
+const Title = styled.span`
+  color: crimson;
+  font-weight: bold;
+`;
+
 function Greeting(props) {
   return html`
-    <div>Hello <b>${props.name}</b>!</div>
+    <div><${Title}>Hello<//> <b>${props.name}</b>!</div>
   `;
 }
 
@@ -14,7 +19,7 @@ function Counter(props) {
   const [count, increase] = useCount();
   return html`
     <div>
-      Count: <b>${count}</b> <button onClick=${increase}>+1</button>
+      <${Title}>Count:<//> <b>${count}</b> <button onClick=${increase}>+1</button>
     </div>
   `;
 }
@@ -26,7 +31,7 @@ function App(props) {
   };
   return html`
     <${Counter}/>
-    <div>Greet: <input autoFocus value=${name} onChange=${changeName} /></div>
+    <div><${Title}>Greet:<//> <input autoFocus value=${name} onChange=${changeName} /></div>
     <${Greeting} name=${name}/>
   `;
 }
