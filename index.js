@@ -250,8 +250,8 @@ function startFileServer(useHttps) {
     opts.key = opts.cert = cert;
   }
 
-  const httpCtor = useHttps ? https : http;
-  const server = httpCtor.createServer(opts, (req, res) => {
+  const { createServer } = useHttps ? https : http;
+  const server = createServer(opts, (req, res) => {
     let path = req.url;
     if (path === '/') path = indexFile;
     path = prefix + path;
