@@ -13,9 +13,39 @@
 
 1. `npm i -P esm-dep-bundler`
 
-2. `npx esm-dep-bundler`
+2. Add this to `package.json`:
 
-3. Create these files:
+    ```json
+    "ESM-Dep-Bundler": {
+      "fileAliases": {
+        "styled-components": "node_modules/styled-components/dist/styled-components.browser.cjs.js"
+      },
+      "npmAliases": {
+        "react": "npm:@reactesm/react",
+        "react-dom": "npm:@reactesm/react-dom"
+      }
+    },
+    ```
+
+    The `fileAliases` key is for when a package has a non-browser
+    entry point. In this case, styled-components's package.json has
+    `main` and `module` keys that point to JS files that assume a
+    Node.js environment. ESM-Dep-Bundler (via Rollup) can't work with
+    that, since it requires Node.js modules. Instead of doing what
+    webpack does and providing polyfills, ESM-Dep-Bundler allows you
+    to just specify a browser-compatible file.
+
+    The `npmAliases` key allows you to specify where an NPM package
+    should be installed from. It uses the same syntax as the NPM CLI,
+    which it literally shells out to. In this example, it installs
+    Rollup-compatible versions of 'react' and 'react-dom' from NPM, so
+    that any time your code or any of your dependencies import React,
+    it'll see this version instead.
+
+
+3. `npx esm-dep-bundler`
+
+4. Create these files:
 
     * public/index.js
 
