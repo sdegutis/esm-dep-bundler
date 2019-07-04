@@ -85,12 +85,16 @@ function run() {
   console.log('fileAliases =', fileAliases);
   console.log('npmAliases =', npmAliases);
 
-  listenForPublicFileChanges(includePath, outDir);
-  watchForBundling({ latestDeps, includePath, webModulesPrefix, outDir, npmAliases, fileAliases });
+  const build = () => {
+    bundleViaRollup({ latestDeps, includePath, webModulesPrefix, outDir, npmAliases, fileAliases });
+  };
+
+  build();
+  listenForPublicFileChanges(includePath, outDir, build);
   startFileServer(publicDir, useHttps);
 }
 
-function watchForBundling({ latestDeps, includePath, webModulesPrefix, outDir, npmAliases, fileAliases }) {
+function bundleViaRollup({ latestDeps, includePath, webModulesPrefix, outDir, npmAliases, fileAliases }) {
   const { rollupInput, npmDeps } = getDependenciesFromFiles({ includePath, webModulesPrefix });
 
   installDeps(latestDeps, npmDeps, npmAliases);
@@ -225,7 +229,7 @@ function cleanFilesFirst(outDir) {
   }
 }
 
-function listenForPublicFileChanges(includePath, outDir) {
+function listenForPublicFileChanges(includePath, outDir, build) {
   chokidar.watch(includePath, {
     ignoreInitial: true,
     ignored: [
@@ -234,7 +238,7 @@ function listenForPublicFileChanges(includePath, outDir) {
     ],
   }).on('all', (event, path) => {
     console.log(event, path);
-    run();
+    build();
   });
 }
 
