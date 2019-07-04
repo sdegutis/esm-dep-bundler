@@ -35,15 +35,15 @@ function run() {
   installPolyfills();
 
   const {
-    includePath,
-    webModulesPrefix,
-    outDir,
+    includePattern,
+    webModulesDir,
+    publicDir,
     useHttps,
   } = yargs
-        .option('include-path', {
+        .option('include-pattern', {
           alias: 'i',
-          description: "A 'glob' to match JS/TS files to search for ESM imports/exports.",
-          default: 'public/**/*.js',
+          description: "A 'glob' to match JS/TS files to search for ESM imports/exports, relative to <public-dir>.",
+          default: '**/*.js',
         })
         .option('use-https', {
           type: 'boolean',
@@ -51,17 +51,26 @@ function run() {
           description: "Use HTTPS for the dev-server.",
           default: false,
         })
-        .option('out-dir', {
-          alias: 'o',
-          description: "The directory to output all your dependencies into.",
-          default: 'public/web_modules',
-        })
-        .option('web-modules-prefix', {
+        .option('public-dir', {
           alias: 'p',
-          description: "The path of your web modules relative to your web server's root public directory.",
-          default: '/web_modules/',
+          description: "Your web server's root public directory relative to project root.",
+          default: 'public',
+        })
+        .option('web-modules-dir', {
+          alias: 'm',
+          description: "The name of the directory under <public-dir> that should contain your web modules.",
+          default: 'web_modules',
         })
         .argv;
+
+  const webModulesPrefix = '/' + webModulesDir + '/';
+  const outDir = path.join(publicDir, webModulesDir);
+  const includePath = path.join(publicDir, includePattern);
+
+  console.log('webModulesPrefix =', webModulesPrefix);
+  console.log('outDir =', outDir);
+  console.log('includePath =', includePath);
+  // process.exit(0);
 
   const pkg = require(path.join(process.cwd(), './package.json'));
 
