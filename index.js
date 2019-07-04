@@ -291,10 +291,10 @@ function startFileServer(publicDir, useHttps) {
    * [x] get mime-types right
    * [x] use https
    * [x] serve 404s as ./public/index.html
-   * [ ] proxy /api/** /* to another server
    * [x] make http optional via yargs
-   * [ ] make public file configurable via yargs
+   * [x] make public file configurable via yargs
    * [ ] make 404-based index file configurable via yargs
+   * [ ] proxy /api/** /* to another server
    */
 }
 
