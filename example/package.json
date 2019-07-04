@@ -1,0 +1,23 @@
+{
+  "name": "esm-dep-bundler-test",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "ESM-Dep-Bundler": {
+    "fileAliases": {
+      "styled-components": "node_modules/styled-components/dist/styled-components.browser.cjs.js"
+    },
+    "npmAliases": {
+      "react": "npm:@reactesm/react",
+      "react-dom": "npm:@reactesm/react-dom"
+    }
+  },
+  "devDependencies": {
+    "esm-dep-bundler": "file:.."
+  }
+}
