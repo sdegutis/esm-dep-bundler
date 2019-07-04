@@ -87,7 +87,7 @@ function run() {
 
   listenForPublicFileChanges(includePath, outDir);
   watchForBundling({ latestDeps, includePath, webModulesPrefix, outDir, npmAliases, fileAliases });
-  startFileServer(useHttps);
+  startFileServer(publicDir, useHttps);
 }
 
 function watchForBundling({ latestDeps, includePath, webModulesPrefix, outDir, npmAliases, fileAliases }) {
@@ -238,8 +238,7 @@ function listenForPublicFileChanges(includePath, outDir) {
   });
 }
 
-function startFileServer(useHttps) {
-  const prefix = './public';
+function startFileServer(publicDir, useHttps) {
   const indexFile = '/index.html';
 
   const opts = {};
@@ -263,10 +262,10 @@ function startFileServer(useHttps) {
   const server = createServer(opts, (req, res) => {
     let path = req.url;
     if (path === '/') path = indexFile;
-    path = prefix + path;
+    path = publicDir + path;
     fs.exists(path, exists => {
       if (!exists) {
-        path = prefix + indexFile;
+        path = publicDir + indexFile;
       }
       res.setHeader(
         'Content-Type',
