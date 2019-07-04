@@ -96,26 +96,22 @@
         export {default as React} from '/web_modules/react@16.8.6.js';
         ```
 
-4. `cd public && python -m SimpleHTTPServer`
-
-    Note: I'm thinking Esm-Dep-Bundler should maybe provide it's own
-    little file-server, too. But that seems out of the scope of ESM
-    dependency bundling, so it might need to be renamed if I add that.
-
 ### CLI
 
 ``` bash
 $ npx esm-dep-bundler --help
 Options:
-  --help                    Show help                                  [boolean]
-  --version                 Show version number                        [boolean]
-  --include-path, -i        A 'glob' to match JS/TS files to search for ESM
-                            imports/exports.         [default: "public/**/*.js"]
-  --out-dir, -o             The directory to output all your dependencies into.
-                                                 [default: "public/web_modules"]
-  --web-modules-prefix, -p  The path of your web modules relative to your web
-                            server's root public directory.
-                                                      [default: "/web_modules/"]
+  --help                 Show help                                     [boolean]
+  --version              Show version number                           [boolean]
+  --include-pattern, -i  A 'glob' to match JS/TS files to search for ESM
+                         imports/exports, relative to <public-dir>.
+                                                            [default: "**/*.js"]
+  --use-https, -s        Use HTTPS for the dev-server.[boolean] [default: false]
+  --public-dir, -p       Your web server's root public directory relative to
+                         project root.                       [default: "public"]
+  --web-modules-dir, -m  The name of the directory under <public-dir> that
+                         should contain your web modules.
+                                                        [default: "web_modules"]
 ```
 
 ### Credits
