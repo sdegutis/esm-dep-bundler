@@ -69,7 +69,9 @@ function run() {
   const latestDeps = Object.keys(alreadyInstalledDeps);
   console.log(latestDeps);
 
-  const { fileAliases, npmAliases } = pkg[PKG_CONFIG_KEY];
+  const pkgConfig = pkg[PKG_CONFIG_KEY] || {};
+  const fileAliases = pkgConfig.fileAliases || {};
+  const npmAliases = pkgConfig.npmAliases || {};
 
   console.log('fileAliases =', fileAliases);
   console.log('npmAliases =', npmAliases);
