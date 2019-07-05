@@ -20,6 +20,7 @@ const { execSync } = require('child_process');
 const chokidar = require('chokidar');
 
 const yargs = require('yargs');
+const c = require('ansi-colors');
 
 const http = require('http');
 const https = require('https');
@@ -28,6 +29,7 @@ const selfsigned = require('selfsigned');
 
 
 const PKG_CONFIG_KEY = 'ESM-Dep-Bundler';
+const log = setupLogger();
 run();
 
 
@@ -67,23 +69,33 @@ function run() {
   const outDir = path.join(publicDir, webModulesDir);
   const includePath = path.join(publicDir, includePattern);
 
-  console.log('webModulesPrefix =', webModulesPrefix);
-  console.log('outDir =', outDir);
-  console.log('includePath =', includePath);
-  // process.exit(0);
-
   const pkg = require(path.join(process.cwd(), './package.json'));
 
   const alreadyInstalledDeps = pkg.dependencies || {};
   const latestDeps = Object.keys(alreadyInstalledDeps);
-  console.log(latestDeps);
+
+  log.installer(`Found these deps installed already:`);
+  latestDeps.forEach((dep) => {
+    log.installer(`  ${c.cyan(dep)}`);
+  });
 
   const pkgConfig = pkg[PKG_CONFIG_KEY] || {};
   const fileAliases = pkgConfig.fileAliases || {};
   const npmAliases = pkgConfig.npmAliases || {};
 
-  console.log('fileAliases =', fileAliases);
-  console.log('npmAliases =', npmAliases);
+  if (Object.keys(fileAliases).length > 0) {
+    log.builder(`Using 'fileAliases' config:`);
+    Object.entries(fileAliases).forEach(([k, v]) => {
+      log.builder(`  Mapping ${c.cyan(k)} to ${c.cyan(v)}`);
+    });
+  }
+
+  if (Object.keys(npmAliases).length > 0) {
+    log.builder(`Using 'npmAliases' config:`);
+    Object.entries(npmAliases).forEach(([k, v]) => {
+      log.builder(`  Mapping ${c.cyan(k)} to ${c.cyan(v)}`);
+    });
+  }
 
   const build = () => {
     bundleViaRollup({ latestDeps, includePath, webModulesPrefix, outDir, npmAliases, fileAliases });
@@ -99,8 +111,11 @@ function bundleViaRollup({ latestDeps, includePath, webModulesPrefix, outDir, np
 
   installDeps(latestDeps, npmDeps, npmAliases);
 
-  console.log(rollupInput);
-  console.log(npmDeps);
+  log.builder(`Starting to bundle deps:`);
+  log.builder(`Outputting web modules to ${c.cyan(outDir)}:`);
+  Object.entries(rollupInput).forEach(([k,v]) => {
+    log.builder(`  ${c.cyan(k)} (via NPM package ${c.cyan(v)})`);
+  });
 
   rollup({
     input: rollupInput,
@@ -119,7 +134,7 @@ function bundleViaRollup({ latestDeps, includePath, webModulesPrefix, outDir, np
       exports: 'named',
       chunkFileNames: 'common/[name]-[hash].js',
     }).then(() => {
-      console.log('done.');
+      log.builder('Done.');
     });
   });
 }
@@ -134,6 +149,8 @@ function maybeAlias(name, aliases, version) {
 function installDeps(latestDeps, deps, aliases, version) {
   const depsToInstall = deps.filter(([name, version]) => !latestDeps.includes(name));
 
+  log.installer(`Checking for packages to install...`);
+
   depsToInstall.forEach(([name, version]) => {
     latestDeps.push(name);
   });
@@ -143,18 +160,17 @@ function installDeps(latestDeps, deps, aliases, version) {
           .map(([name, version]) => maybeAlias(name, aliases))
           .unique()
           .join(' ');
-    console.log('installing: ', JSON.stringify(depStrings));
-
+    log.installer(`Installing packages: ${depStrings}`);
     execSync(`npm install ${depStrings}`);
+    log.installer(`Done.`);
   }
   else {
-    console.log('deps up to date; skipping npm-install');
+    log.installer('NPM Deps up to date; skipping npm-install.');
   }
 }
 
 function getDependenciesFromFiles({ includePath, webModulesPrefix }) {
   const entries = fg.sync(includePath);
-  // console.log(entries);
 
   const walk = inject(acornWalk);
   const allImportedModules = [];
@@ -179,7 +195,6 @@ function getDependenciesFromFiles({ includePath, webModulesPrefix }) {
         }
       },
     }, { ...walk.base });
-    // console.log(result);
   });
 
   const webModules = allImportedModules
@@ -230,6 +245,8 @@ function cleanFilesFirst(outDir) {
 }
 
 function listenForPublicFileChanges(includePath, outDir, build) {
+  log.watcher(`Watching files at ${c.cyan(includePath)}`);
+  log.watcher(`Listening for changes...`);
   chokidar.watch(includePath, {
     ignoreInitial: true,
     ignored: [
@@ -237,7 +254,7 @@ function listenForPublicFileChanges(includePath, outDir, build) {
       outDir,
     ],
   }).on('all', (event, path) => {
-    console.log(event, path);
+    log.watcher(`File changed at "${path}"; rebuilding...`);
     build();
   });
 }
@@ -248,9 +265,7 @@ function startFileServer(publicDir, useHttps) {
   const opts = {};
   if (useHttps) {
     const certPath = path.join(__dirname, 'cert.pem');
-    console.log("checking for cert file");
     if (!fs.existsSync(certPath)) {
-      console.log("didn't find it; creating now...");
       const pems = selfsigned.generate([
         { name: 'commonName', value: 'localhost' },
       ]);
@@ -281,7 +296,7 @@ function startFileServer(publicDir, useHttps) {
 
   const port = 8080;
   server.listen(port, () => {
-    console.log(`Listening on port ${port}`);
+    log.server(`Listening on port ${port}.`);
   });
 
   /**
@@ -307,5 +322,20 @@ function installPolyfills() {
       if (!found) seen[item] = true;
       return !found;
     });
+  };
+}
+
+function setupLogger() {
+  function createFor(actor, padding, colorize) {
+    return (str) => {
+      console.log(`${colorize(`[${actor}]${padding}  `)}${str}`);
+    };
+  }
+
+  return {
+    server:    createFor('server', '   ', c.dim.yellow),
+    builder:   createFor('builder', '  ', c.dim.blue),
+    watcher:   createFor('watcher', '  ', c.dim.magenta),
+    installer: createFor('installer', '', c.dim.green),
   };
 }
