@@ -42,12 +42,11 @@ function run() {
     includePattern,
     webModulesDir,
     publicDir,
-    useHttps,
+    protocol,
     indexFile,
     apiPrefix,
     backendServer,
     port,
-    useHttp2,
   } = yargs
         .option('port', {
           alias: 'p',
@@ -60,11 +59,11 @@ function run() {
           description: "A 'glob' to match JS/TS files to search for ESM imports/exports, relative to <public-dir>.",
           default: '**/*.js',
         })
-        .option('use-https', {
-          alias: 's',
-          description: "Use HTTPS for the dev-server.",
-          type: 'boolean',
-          default: false,
+        .option('protocol', {
+          alias: 't',
+          description: "Which HTTP protocol to use for the dev-server.",
+          choices: ['http', 'https', 'http2'],
+          default: 'http2',
         })
         .option('public-dir', {
           alias: 'd',
@@ -90,12 +89,6 @@ function run() {
           alias: 'b',
           description: "Another server to proxy back-end requests to.",
           default: 'http://localhost:4000/',
-        })
-        .option('use-http2', {
-          alias: '2',
-          description: "Use HTTP/2 for the development web-server.",
-          type: 'boolean',
-          default: true,
         })
         .argv;
 
@@ -137,7 +130,7 @@ function run() {
 
   build();
   listenForPublicFileChanges(includePath, outDir, build);
-  startFileServer(port, useHttp2, publicDir, useHttps, indexFile, apiPrefix, backendServer);
+  startFileServer(port, protocol, publicDir, indexFile, apiPrefix, backendServer);
 }
 
 function bundleViaRollup({ latestDeps, includePath, webModulesPrefix, outDir, npmAliases, fileAliases }) {
@@ -293,7 +286,7 @@ function listenForPublicFileChanges(includePath, outDir, build) {
   });
 }
 
-function startFileServer(port, useHttp2, publicDir, useHttps, indexFile, apiPrefix, backendServer) {
+function startFileServer(port, protocol, publicDir, indexFile, apiPrefix, backendServer) {
   const defaultFile = path.join(publicDir, indexFile);
 
   log.server(`Proxying all requests starting with ${c.cyan(apiPrefix)} to ${c.cyan(backendServer)}`);
@@ -307,7 +300,7 @@ function startFileServer(port, useHttp2, publicDir, useHttps, indexFile, apiPref
   }
 
   const opts = {};
-  if (useHttps || useHttp2) {
+  if (protocol !== 'http') {
     const certPath = path.join(__dirname, 'cert.pem');
     if (!fs.existsSync(certPath)) {
       const pems = selfsigned.generate([
@@ -334,11 +327,11 @@ function startFileServer(port, useHttp2, publicDir, useHttps, indexFile, apiPref
     // res.status(500).json({ error: err.toString() });
   };
 
-  log.server(`Using HTTP/2: ${c.cyan(useHttp2)}`);
+  log.server(`Using HTTP protocol: ${c.cyan(protocol)}`);
 
   const createServer =
-        useHttp2 ? http2.createSecureServer :
-        useHttps ? https.createServer :
+        protocol === 'http2' ? http2.createSecureServer :
+        protocol === 'https' ? https.createServer :
         http.createServer;
   const server = createServer(opts, (req, res) => {
     let p = path.join(publicDir, req.url);
