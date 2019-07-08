@@ -41,6 +41,7 @@ function run() {
     webModulesDir,
     publicDir,
     useHttps,
+    indexFile,
   } = yargs
         .option('include-pattern', {
           alias: 'i',
@@ -62,6 +63,11 @@ function run() {
           alias: 'm',
           description: "The name of the directory under <public-dir> that should contain your web modules.",
           default: 'web_modules',
+        })
+        .option('index-file', {
+          alias: 'h',
+          description: "The path to the file relative to <public-dir> to serve for 404s and /.",
+          default: '/index.html',
         })
         .argv;
 
@@ -103,7 +109,7 @@ function run() {
 
   build();
   listenForPublicFileChanges(includePath, outDir, build);
-  startFileServer(publicDir, useHttps);
+  startFileServer(publicDir, useHttps, indexFile);
 }
 
 function bundleViaRollup({ latestDeps, includePath, webModulesPrefix, outDir, npmAliases, fileAliases }) {
@@ -259,8 +265,16 @@ function listenForPublicFileChanges(includePath, outDir, build) {
   });
 }
 
-function startFileServer(publicDir, useHttps) {
-  const indexFile = '/index.html';
+function startFileServer(publicDir, useHttps, indexFile) {
+  const defaultFile = path.join(publicDir, indexFile);
+
+  if (fs.existsSync(defaultFile)) {
+    log.server(`Using default file ${c.cyan(defaultFile)} for 404s and dirs without index.html`);
+  }
+  else {
+    log.server(`Default file ${c.cyan(defaultFile)} doesn't exist; giving up`);
+    process.exit(1);
+  }
 
   const opts = {};
   if (useHttps) {
@@ -277,21 +291,37 @@ function startFileServer(publicDir, useHttps) {
     opts.key = opts.cert = cert;
   }
 
+  function maybeUseDefaultFile(p) {
+    if (!fs.existsSync(p)) {
+      log.server(`Path ${c.cyan(p)} doesn't exist; serving ${c.cyan(publicDir + indexFile)} instead`);
+      return defaultFile;
+    }
+    return p;
+  }
+
   const { createServer } = useHttps ? https : http;
   const server = createServer(opts, (req, res) => {
-    let path = req.url;
-    if (path === '/') path = indexFile;
-    path = publicDir + path;
-    fs.exists(path, exists => {
-      if (!exists) {
-        path = publicDir + indexFile;
-      }
-      res.setHeader(
-        'Content-Type',
-        mime.contentType(mime.lookup(path)) || 'application/octet-stream'
-      );
-      fs.createReadStream(path).pipe(res);
-    });
+    let p = path.join(publicDir, req.url);
+
+    // If it doesn't exist, try the default.
+    p = maybeUseDefaultFile(p);
+
+    // If it's a dir, try appending /index.html
+    const stat = fs.statSync(p);
+    if (stat.isDirectory()) {
+      log.server(`Path ${c.cyan(p)} is a directory; trying again by appending /index.html`);
+      p = path.join(p, '/index.html');
+
+      // Check again if it exists...
+      p = maybeUseDefaultFile(p);
+    }
+
+    // We should be good now.
+    res.setHeader(
+      'Content-Type',
+      mime.contentType(mime.lookup(p)) || 'application/octet-stream'
+    );
+    fs.createReadStream(p).pipe(res);
   });
 
   const port = 8080;
@@ -308,7 +338,7 @@ function startFileServer(publicDir, useHttps) {
    * [x] serve 404s as ./public/index.html
    * [x] make http optional via yargs
    * [x] make public file configurable via yargs
-   * [ ] make 404-based index file configurable via yargs
+   * [x] make 404-based index file configurable via yargs
    * [ ] proxy /api/** /* to another server
    */
 }
