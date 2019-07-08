@@ -17,8 +17,14 @@ function Greeting(props) {
 
 function Counter(props) {
   const [count, increase] = useCount();
+  const sendReq = () => {
+    fetch('/api/foo').then((res) => {
+      console.log(res);
+    });
+  };
   return html`
     <div>
+      <button onClick=${sendReq}>test<//>
       <${Title}>Count:<//> <b>${count}</b> <button onClick=${increase}>+1</button>
     </div>
   `;

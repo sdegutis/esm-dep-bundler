@@ -18,6 +18,7 @@
     "chokidar": "^3.0.1",
     "fast-glob": "^3.0.2",
     "mime-types": "^2.1.24",
+    "request": "^2.88.0",
     "rimraf": "^2.6.3",
     "rollup": "^1.16.2",
     "rollup-plugin-commonjs": "^10.0.0",

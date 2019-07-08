@@ -27,6 +27,7 @@ const https = require('https');
 const mime = require('mime-types');
 const selfsigned = require('selfsigned');
 
+const request = require('request');
 
 const PKG_CONFIG_KEY = 'ESM-Dep-Bundler';
 const log = setupLogger();
@@ -42,6 +43,8 @@ function run() {
     publicDir,
     useHttps,
     indexFile,
+    apiPrefix,
+    backendServer,
   } = yargs
         .option('include-pattern', {
           alias: 'i',
@@ -68,6 +71,16 @@ function run() {
           alias: 'h',
           description: "The path to the file relative to <public-dir> to serve for 404s and /.",
           default: '/index.html',
+        })
+        .option('api-prefix', {
+          alias: 'a',
+          description: "When this prefix is matched, requests will be proxied to <backend-server>",
+          default: '/api/',
+        })
+        .option('backend-server', {
+          alias: 'b',
+          description: "Another server to proxy back-end requests to.",
+          default: 'http://localhost:8080/',
         })
         .argv;
 
@@ -109,7 +122,7 @@ function run() {
 
   build();
   listenForPublicFileChanges(includePath, outDir, build);
-  startFileServer(publicDir, useHttps, indexFile);
+  startFileServer(publicDir, useHttps, indexFile, apiPrefix, backendServer);
 }
 
 function bundleViaRollup({ latestDeps, includePath, webModulesPrefix, outDir, npmAliases, fileAliases }) {
@@ -265,8 +278,10 @@ function listenForPublicFileChanges(includePath, outDir, build) {
   });
 }
 
-function startFileServer(publicDir, useHttps, indexFile) {
+function startFileServer(publicDir, useHttps, indexFile, apiPrefix, backendServer) {
   const defaultFile = path.join(publicDir, indexFile);
+
+  log.server(`Proxying all requests starting with ${c.cyan(apiPrefix)} to ${c.cyan(backendServer)}`);
 
   if (fs.existsSync(defaultFile)) {
     log.server(`Using default file ${c.cyan(defaultFile)} for 404s and dirs without index.html`);
@@ -299,9 +314,31 @@ function startFileServer(publicDir, useHttps, indexFile) {
     return p;
   }
 
+  const logError = (err) => {
+    log.server(`Error: ${err}`);
+    // res.status(500).json({ error: err.toString() });
+  };
+
   const { createServer } = useHttps ? https : http;
   const server = createServer(opts, (req, res) => {
     let p = path.join(publicDir, req.url);
+
+    // Proxy to the back-end server.
+    if (req.url.startsWith(apiPrefix, backendServer)) {
+      try {
+        let url = req.url;
+        if (url.startsWith('/')) url = url.substr(1);
+
+        log.server(`Proxying ${c.cyan(req.url)} to ${c.cyan(backendServer + url)}`);
+        req.pipe(request(backendServer + url))
+          .on('error', logError)
+          .pipe(res);
+      }
+      catch (e) {
+        log.server(`Error: ${e}`);
+      }
+      return;
+    }
 
     // If it doesn't exist, try the default.
     p = maybeUseDefaultFile(p);
@@ -339,7 +376,8 @@ function startFileServer(publicDir, useHttps, indexFile) {
    * [x] make http optional via yargs
    * [x] make public file configurable via yargs
    * [x] make 404-based index file configurable via yargs
-   * [ ] proxy /api/** /* to another server
+   * [x] proxy /api/ to another server
+   * [ ] optionally use http2
    */
 }
 
