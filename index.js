@@ -24,6 +24,7 @@ const c = require('ansi-colors');
 
 const http = require('http');
 const https = require('https');
+const http2 = require('http2');
 const mime = require('mime-types');
 const selfsigned = require('selfsigned');
 
@@ -46,6 +47,7 @@ function run() {
     apiPrefix,
     backendServer,
     port,
+    useHttp2,
   } = yargs
         .option('port', {
           alias: 'p',
@@ -89,6 +91,12 @@ function run() {
           description: "Another server to proxy back-end requests to.",
           default: 'http://localhost:4000/',
         })
+        .option('use-http2', {
+          alias: '2',
+          description: "Use HTTP/2 for the development web-server.",
+          type: 'boolean',
+          default: true,
+        })
         .argv;
 
   const webModulesPrefix = '/' + webModulesDir + '/';
@@ -129,7 +137,7 @@ function run() {
 
   build();
   listenForPublicFileChanges(includePath, outDir, build);
-  startFileServer(port, publicDir, useHttps, indexFile, apiPrefix, backendServer);
+  startFileServer(port, useHttp2, publicDir, useHttps, indexFile, apiPrefix, backendServer);
 }
 
 function bundleViaRollup({ latestDeps, includePath, webModulesPrefix, outDir, npmAliases, fileAliases }) {
@@ -285,7 +293,7 @@ function listenForPublicFileChanges(includePath, outDir, build) {
   });
 }
 
-function startFileServer(port, publicDir, useHttps, indexFile, apiPrefix, backendServer) {
+function startFileServer(port, useHttp2, publicDir, useHttps, indexFile, apiPrefix, backendServer) {
   const defaultFile = path.join(publicDir, indexFile);
 
   log.server(`Proxying all requests starting with ${c.cyan(apiPrefix)} to ${c.cyan(backendServer)}`);
@@ -299,7 +307,7 @@ function startFileServer(port, publicDir, useHttps, indexFile, apiPrefix, backen
   }
 
   const opts = {};
-  if (useHttps) {
+  if (useHttps || useHttp2) {
     const certPath = path.join(__dirname, 'cert.pem');
     if (!fs.existsSync(certPath)) {
       const pems = selfsigned.generate([
@@ -326,7 +334,12 @@ function startFileServer(port, publicDir, useHttps, indexFile, apiPrefix, backen
     // res.status(500).json({ error: err.toString() });
   };
 
-  const { createServer } = useHttps ? https : http;
+  log.server(`Using HTTP/2: ${c.cyan(useHttp2)}`);
+
+  const createServer =
+        useHttp2 ? http2.createSecureServer :
+        useHttps ? https.createServer :
+        http.createServer;
   const server = createServer(opts, (req, res) => {
     let p = path.join(publicDir, req.url);
 
@@ -383,7 +396,7 @@ function startFileServer(port, publicDir, useHttps, indexFile, apiPrefix, backen
    * [x] make public file configurable via yargs
    * [x] make 404-based index file configurable via yargs
    * [x] proxy /api/ to another server
-   * [ ] optionally use http2
+   * [x] optionally use http2
    */
 }
 
