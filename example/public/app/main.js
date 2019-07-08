@@ -18,8 +18,8 @@ function Greeting(props) {
 function Counter(props) {
   const [count, increase] = useCount();
   const sendReq = () => {
-    fetch('/api/foo').then((res) => {
-      console.log(res);
+    fetch('/api/foo').then(res => res.text()).then((text) => {
+      console.log(text);
     });
   };
   return html`

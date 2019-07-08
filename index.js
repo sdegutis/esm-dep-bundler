@@ -45,20 +45,27 @@ function run() {
     indexFile,
     apiPrefix,
     backendServer,
+    port,
   } = yargs
+        .option('port', {
+          alias: 'p',
+          description: "The port to serve the local development web-server on.",
+          type: 'number',
+          default: 8080,
+        })
         .option('include-pattern', {
           alias: 'i',
           description: "A 'glob' to match JS/TS files to search for ESM imports/exports, relative to <public-dir>.",
           default: '**/*.js',
         })
         .option('use-https', {
-          type: 'boolean',
           alias: 's',
           description: "Use HTTPS for the dev-server.",
+          type: 'boolean',
           default: false,
         })
         .option('public-dir', {
-          alias: 'p',
+          alias: 'd',
           description: "Your web server's root public directory relative to project root.",
           default: 'public',
         })
@@ -80,7 +87,7 @@ function run() {
         .option('backend-server', {
           alias: 'b',
           description: "Another server to proxy back-end requests to.",
-          default: 'http://localhost:8080/',
+          default: 'http://localhost:4000/',
         })
         .argv;
 
@@ -122,7 +129,7 @@ function run() {
 
   build();
   listenForPublicFileChanges(includePath, outDir, build);
-  startFileServer(publicDir, useHttps, indexFile, apiPrefix, backendServer);
+  startFileServer(port, publicDir, useHttps, indexFile, apiPrefix, backendServer);
 }
 
 function bundleViaRollup({ latestDeps, includePath, webModulesPrefix, outDir, npmAliases, fileAliases }) {
@@ -278,7 +285,7 @@ function listenForPublicFileChanges(includePath, outDir, build) {
   });
 }
 
-function startFileServer(publicDir, useHttps, indexFile, apiPrefix, backendServer) {
+function startFileServer(port, publicDir, useHttps, indexFile, apiPrefix, backendServer) {
   const defaultFile = path.join(publicDir, indexFile);
 
   log.server(`Proxying all requests starting with ${c.cyan(apiPrefix)} to ${c.cyan(backendServer)}`);
@@ -361,7 +368,6 @@ function startFileServer(publicDir, useHttps, indexFile, apiPrefix, backendServe
     fs.createReadStream(p).pipe(res);
   });
 
-  const port = 8080;
   server.listen(port, () => {
     log.server(`Listening on port ${port}.`);
   });
