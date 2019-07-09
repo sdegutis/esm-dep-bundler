@@ -134,15 +134,24 @@ $ npx esm-dep-bundler --help
 Options:
   --help                 Show help                                     [boolean]
   --version              Show version number                           [boolean]
+  --port, -p             The port to serve the local development web-server on.
+                                                        [number] [default: 8080]
   --include-pattern, -i  A 'glob' to match JS/TS files to search for ESM
                          imports/exports, relative to <public-dir>.
                                                             [default: "**/*.js"]
-  --use-https, -s        Use HTTPS for the dev-server.[boolean] [default: false]
-  --public-dir, -p       Your web server's root public directory relative to
+  --protocol, -t         Which HTTP protocol to use for the dev-server.
+                           [choices: "http", "https", "http2"] [default: "http"]
+  --public-dir, -d       Your web server's root public directory relative to
                          project root.                       [default: "public"]
   --web-modules-dir, -m  The name of the directory under <public-dir> that
                          should contain your web modules.
                                                         [default: "web_modules"]
+  --index-file, -h       The path to the file relative to <public-dir> to serve
+                         for 404s and /.                [default: "/index.html"]
+  --api-prefix, -a       When this prefix is matched, requests will be proxied
+                         to <backend-server>                  [default: "/api/"]
+  --backend-server, -b   Another server to proxy back-end requests to.
+                                             [default: "http://localhost:4000/"]
 ```
 
 ### Credits
