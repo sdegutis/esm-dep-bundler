@@ -63,7 +63,7 @@ function run() {
           alias: 't',
           description: "Which HTTP protocol to use for the dev-server.",
           choices: ['http', 'https', 'http2'],
-          default: 'http2',
+          default: 'http',
         })
         .option('public-dir', {
           alias: 'd',
